@@ -17,7 +17,16 @@ function initRepo() {
 
 function App() {
   const [repo] = useState(initRepo);
-  const [docHandle] = useState(() => repo.create<DocType>());
+  const [docHandle] = useState(() => {
+    const docHandle = repo.create<DocType>();
+    docHandle.change((doc) => {
+      doc.content = "";
+    });
+    docHandle.on("change", ({ doc }) => {
+      console.log("doc", doc);
+    });
+    return docHandle;
+  });
 
   return <Editor docHandle={docHandle} />;
 }
