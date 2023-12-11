@@ -7,11 +7,17 @@ export function replicatePatchesToPm(
   patches: Automerge.Patch[],
 ) {
   const tr = state.tr;
-
   patches.forEach((patch) => {
     if (patch.action === "splice") {
       const index = patch.path[1] + 1;
       tr.insertText(patch.value, index);
+      if (patch.marks) {
+        Object.entries(patch.marks).forEach(([mark, value]) => {
+          if (mark && !!value) {
+            tr.addMark(index, index + 1, EditorSchema.mark(mark));
+          }
+        });
+      }
     }
     if (patch.action === "del") {
       const index = patch.path[1] + 1;

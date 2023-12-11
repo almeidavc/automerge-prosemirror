@@ -39,13 +39,14 @@ export function Editor({ docHandle }: EditorProps) {
         const lastHeads = getLastHeads(plugin, state);
 
         if (transaction.docChanged) {
-          const newHeads = applyChangesToAm(
-            docHandle,
-            lastHeads,
-            state,
-            transaction,
-          );
+          console.group();
+          console.log("transaction", transaction);
+
+          const newHeads = applyChangesToAm(docHandle, lastHeads, transaction);
           const diff = Automerge.diff(doc, lastHeads, newHeads);
+
+          console.log("patches", diff);
+
           const reconcileTransaction = replicatePatchesToPm(state, diff);
 
           // update heads
@@ -53,6 +54,8 @@ export function Editor({ docHandle }: EditorProps) {
 
           const newState = state.apply(reconcileTransaction);
           view.updateState(newState);
+
+          console.groupEnd();
         } else {
           const newState = state.apply(transaction);
           view.updateState(newState);
