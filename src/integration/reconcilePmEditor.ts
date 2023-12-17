@@ -1,8 +1,9 @@
 import { EditorState } from "prosemirror-state";
 import { next as Automerge } from "@automerge/automerge";
 import { EditorSchema } from "../Editor.tsx";
+import { EditorView } from "prosemirror-view";
 
-export function replicatePatchesToPm(
+function mapPatchesToPmTransaction(
   state: EditorState,
   patches: Automerge.Patch[],
 ) {
@@ -13,8 +14,10 @@ export function replicatePatchesToPm(
       tr.insertText(patch.value, index);
       if (patch.marks) {
         Object.entries(patch.marks).forEach(([mark, value]) => {
-          if (mark && !!value) {
+          if (!!value) {
             tr.addMark(index, index + 1, EditorSchema.mark(mark));
+          } else {
+            tr.removeMark(index, index + 1, EditorSchema.mark(mark));
           }
         });
       }
@@ -43,4 +46,20 @@ export function replicatePatchesToPm(
   });
 
   return tr;
+}
+
+export function reconcilePmEditor(
+  view: EditorView,
+  state: EditorState,
+  patches: Automerge.Patch[],
+  newHeads: Automerge.Heads,
+) {
+  const reconcileTransaction = mapPatchesToPmTransaction(state, patches);
+  console.log("reconcile transaction", reconcileTransaction);
+
+  // update heads
+  reconcileTransaction.setMeta("newHeads", newHeads);
+
+  const newState = state.apply(reconcileTransaction);
+  view.updateState(newState);
 }

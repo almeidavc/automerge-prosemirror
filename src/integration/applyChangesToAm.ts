@@ -13,6 +13,7 @@ function getMarkExpandProperty(mark: string) {
     case "strong":
     case "italic":
       return "after";
+    // TODO: add explicit statements for comment, link marks
     default:
       return "none";
   }
@@ -55,28 +56,59 @@ export function applyChangesToAm(
           textToInsert,
         );
 
-        // apply missing marks to the inserted text. this should only be necessary when:
-        // - selection is empty (otherwise we apply the mark in the AddMarkStep)
-        // - mark is not implicit, e.g. inserted character should be bolded, but previous characters aren't
-        const amMarks = Automerge.marksAt(doc, PATH.slice(), step.from - 1);
-        textMarks?.forEach((mark) => {
-          const isMarkInDoc =
-            mark.type.name in amMarks && !!amMarks[mark.type.name];
+        // step inserts characters
+        if (step.slice.content.childCount > 0) {
+          // reconcile the marks in the doc with the marks of the inserted text
+          // this is necessary, when:
+          // - selection is empty (otherwise we apply the mark in the AddMarkStep)
+          // - mark is not implicit, e.g. inserted character should be bolded, but previous characters aren't
+          const amMarks = Automerge.marksAt(doc, PATH.slice(), step.from - 1);
 
-          if (!isMarkInDoc) {
-            Automerge.mark(
-              doc,
-              PATH,
-              {
-                start: step.from - 1,
-                end: step.to - 1,
-                expand: "after",
-              },
-              mark.type.name,
-              true,
-            );
+          // add missing marks
+          for (const textMark of textMarks ?? []) {
+            const isMarkInDoc =
+              textMark.type.name in amMarks && !!amMarks[textMark.type.name];
+
+            if (!isMarkInDoc) {
+              Automerge.mark(
+                doc,
+                PATH.slice(),
+                {
+                  start: step.from - 1,
+                  end: step.to,
+                  expand: "after",
+                },
+                textMark.type.name,
+                true,
+              );
+            }
           }
-        });
+
+          // remove marks that are no longer active
+          for (const amMark in amMarks) {
+            // amMark is not active
+            if (!amMarks[amMark]) {
+              continue;
+            }
+
+            const hasInsertedTextMark = textMarks
+              ?.map((m) => m.type.name)
+              ?.includes(amMark);
+
+            if (!hasInsertedTextMark) {
+              Automerge.unmark(
+                doc,
+                PATH.slice(),
+                {
+                  start: step.from - 1,
+                  end: step.to,
+                  expand: "after",
+                },
+                amMark,
+              );
+            }
+          }
+        }
       });
     }
 
@@ -87,7 +119,7 @@ export function applyChangesToAm(
       newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.mark(
           doc,
-          PATH,
+          PATH.slice(),
           {
             start: step.from - 1,
             end: step.to - 1,
@@ -106,7 +138,7 @@ export function applyChangesToAm(
       newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.unmark(
           doc,
-          PATH,
+          PATH.slice(),
           {
             start: step.from - 1,
             end: step.to - 1,
