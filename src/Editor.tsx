@@ -5,7 +5,7 @@ import { EditorView } from "prosemirror-view";
 import { exampleSetup } from "prosemirror-example-setup";
 import "prosemirror-example-setup/style/style.css";
 import "prosemirror-menu/style/menu.css";
-import { DocHandle } from "@automerge/automerge-repo";
+import { DocHandle, DocHandleChangePayload } from "@automerge/automerge-repo";
 import { DocType } from "./App.tsx";
 import {
   AutomergePlugin,
@@ -20,56 +20,25 @@ export const EditorSchema = schema;
 
 interface EditorProps {
   docHandle: DocHandle<DocType>;
-  sync?: {
-    publishLocalChange: (change: Automerge.Change) => void;
-    subscribeToRemoteChanges: (
-      handler: (changes: Automerge.Change[]) => void,
+  sync: {
+    subscribeToChanges: (
+      handler: (payload: DocHandleChangePayload<DocType>) => void,
     ) => void;
-    unsubscribe: () => void;
+    unsubscribe: (
+      handler: (payload: DocHandleChangePayload<DocType>) => void,
+    ) => void;
   };
 }
 
+// assumes the doc is ready
 export function Editor({ docHandle, sync }: EditorProps) {
   const mountTargetRef = useRef<HTMLDivElement>(null);
 
   const editorViewRef = useRef<EditorView | null>(null);
   const editorPluginRef = useRef<AutomergePlugin | null>(null);
 
-  function dispatchTransaction(onChange?: (change: Automerge.Change) => void) {
-    return (transaction: Transaction) => {
-      const doc = docHandle.docSync();
-      const view = editorViewRef.current;
-      const plugin = editorPluginRef.current;
-
-      if (!doc || !view || !plugin) {
-        return;
-      }
-
-      const lastHeads = getLastHeads(plugin, view.state);
-
-      if (transaction.docChanged) {
-        console.group();
-        console.log("transaction", transaction);
-
-        const newHeads = applyChangesToAm(docHandle, lastHeads, transaction);
-        onChange?.(Automerge.getLastLocalChange(Automerge.view(doc, newHeads)));
-
-        const diff = Automerge.diff(doc, lastHeads, newHeads);
-        console.log("patches", diff);
-
-        reconcilePmEditor(view, view.state, diff, newHeads);
-
-        console.groupEnd();
-      } else {
-        const newState = view.state.apply(transaction);
-        view.updateState(newState);
-      }
-    };
-  }
-
   useEffect(() => {
     const doc = docHandle.docSync();
-    // TODO: handle loading, error states
     if (!doc) {
       throw Error("doc is not ready");
     }
@@ -80,28 +49,40 @@ export function Editor({ docHandle, sync }: EditorProps) {
         schema: EditorSchema,
         plugins: [...exampleSetup({ schema: EditorSchema }), plugin],
       }),
-      dispatchTransaction: dispatchTransaction(sync?.publishLocalChange),
+      dispatchTransaction(transaction: Transaction) {
+        const doc = docHandle.docSync();
+        const view = editorViewRef.current;
+        const plugin = editorPluginRef.current;
+
+        if (!doc || !view || !plugin) {
+          return;
+        }
+
+        if (transaction.docChanged) {
+          console.group();
+          console.log("transaction", transaction);
+
+          const lastHeads = getLastHeads(plugin, view.state);
+          applyChangesToAm(docHandle, lastHeads, transaction);
+
+          console.groupEnd();
+        } else {
+          const newState = view.state.apply(transaction);
+          view.updateState(newState);
+        }
+      },
     });
 
     editorPluginRef.current = plugin;
     editorViewRef.current = view;
 
     return () => {
-      sync?.unsubscribe();
       view.destroy();
     };
   }, []);
 
   useEffect(() => {
-    if (editorViewRef.current) {
-      editorViewRef.current?.setProps({
-        dispatchTransaction: dispatchTransaction(sync?.publishLocalChange),
-      });
-    }
-  }, [sync?.publishLocalChange]);
-
-  useEffect(() => {
-    sync?.subscribeToRemoteChanges((changes) => {
+    const handler = (payload: DocHandleChangePayload<DocType>) => {
       const view = editorViewRef.current;
       const plugin = editorPluginRef.current;
 
@@ -109,25 +90,21 @@ export function Editor({ docHandle, sync }: EditorProps) {
         return;
       }
 
-      docHandle.update((doc) => {
-        const [newDoc] = Automerge.applyChanges(doc, changes);
+      const patches = payload.patches;
+      const newHeads = Automerge.getHeads(payload.doc);
 
-        const lastHeads = getLastHeads(plugin, view.state);
-        const newHeads = Automerge.getHeads(newDoc);
+      console.log("marks", Automerge.marks(payload.doc, ["content"]));
+      console.log("patches", patches);
 
-        const patches = Automerge.diff(newDoc, lastHeads, newHeads);
-        console.log("syncing... patches", patches);
+      reconcilePmEditor(view, view.state, patches, newHeads);
+    };
 
-        reconcilePmEditor(view, view.state, patches, newHeads);
-
-        return newDoc;
-      });
-    });
+    sync.subscribeToChanges(handler);
 
     return () => {
-      sync?.unsubscribe();
+      sync.unsubscribe(handler);
     };
-  }, [sync?.subscribeToRemoteChanges]);
+  }, [sync.subscribeToChanges]);
 
   return (
     <div
