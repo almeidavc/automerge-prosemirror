@@ -25,11 +25,10 @@ function mapPmIndexToAm(index: number) {
 
 export function applyChangesToAm(
   docHandle: DocHandle<DocType>,
+  path: Automerge.Prop[],
   lastHeads: Automerge.Heads,
   transaction: Transaction,
 ) {
-  const PATH = ["content"];
-
   let newHeads;
 
   transaction.steps.forEach((step) => {
@@ -44,7 +43,8 @@ export function applyChangesToAm(
         // first remove any deleted characters
         // is the case when user presses backspace or selection is not empty and user deletes or inserts characters
         if (step.to - step.from > 0) {
-          Automerge.splice(doc, PATH.slice(), currAmIndex, step.to - step.from);
+          // splice() mutates path argument
+          Automerge.splice(doc, path.slice(), currAmIndex, step.to - step.from);
         }
 
         step.slice.content.forEach((node) => {
@@ -58,20 +58,13 @@ export function applyChangesToAm(
             return;
           }
 
-          Automerge.splice(
-            doc,
-            // splice() mutates path argument
-            PATH.slice(),
-            currAmIndex,
-            0,
-            node.text,
-          );
+          Automerge.splice(doc, path.slice(), currAmIndex, 0, node.text);
 
           // reconcile the marks in the doc with the marks of the inserted text
           // this is necessary, when:
           // - selection is empty (otherwise we apply the mark in the AddMarkStep)
           // - mark is not implicit, e.g. inserted character should be bolded, but previous characters aren't
-          const amMarks = Automerge.marksAt(doc, PATH.slice(), currAmIndex);
+          const amMarks = Automerge.marksAt(doc, path.slice(), currAmIndex);
 
           // add missing marks
           for (const textMark of node.marks ?? []) {
@@ -81,7 +74,7 @@ export function applyChangesToAm(
             if (!isMarkInDoc) {
               Automerge.mark(
                 doc,
-                PATH.slice(),
+                path.slice(),
                 {
                   start: currAmIndex,
                   end: currAmIndex + node.text.length,
@@ -107,7 +100,7 @@ export function applyChangesToAm(
             if (!hasInsertedTextMark) {
               Automerge.unmark(
                 doc,
-                PATH.slice(),
+                path.slice(),
                 {
                   start: currAmIndex,
                   end: currAmIndex + node.text.length,
@@ -130,7 +123,7 @@ export function applyChangesToAm(
       newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.mark(
           doc,
-          PATH.slice(),
+          path.slice(),
           {
             start: step.from - 1,
             end: step.to - 1,
@@ -149,7 +142,7 @@ export function applyChangesToAm(
       newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.unmark(
           doc,
-          PATH.slice(),
+          path.slice(),
           {
             start: step.from - 1,
             end: step.to - 1,

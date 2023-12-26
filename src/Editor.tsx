@@ -20,6 +20,7 @@ export const EditorSchema = schema;
 
 interface EditorProps {
   docHandle: DocHandle<DocType>;
+  path: Automerge.Prop[];
   sync: {
     subscribeToChanges: (
       handler: (payload: DocHandleChangePayload<DocType>) => void,
@@ -31,7 +32,7 @@ interface EditorProps {
 }
 
 // assumes the doc is ready
-export function Editor({ docHandle, sync }: EditorProps) {
+export function Editor({ docHandle, path, sync }: EditorProps) {
   const mountTargetRef = useRef<HTMLDivElement>(null);
 
   const editorViewRef = useRef<EditorView | null>(null);
@@ -63,7 +64,7 @@ export function Editor({ docHandle, sync }: EditorProps) {
           console.log("transaction", transaction);
 
           const lastHeads = getLastHeads(plugin, view.state);
-          applyChangesToAm(docHandle, lastHeads, transaction);
+          applyChangesToAm(docHandle, path, lastHeads, transaction);
 
           console.groupEnd();
         } else {
@@ -93,7 +94,7 @@ export function Editor({ docHandle, sync }: EditorProps) {
       const patches = payload.patches;
       const newHeads = Automerge.getHeads(payload.doc);
 
-      console.log("marks", Automerge.marks(payload.doc, ["content"]));
+      console.log("marks", Automerge.marks(payload.doc, path.slice()));
       console.log("patches", patches);
 
       reconcilePmEditor(view, view.state, patches, newHeads);

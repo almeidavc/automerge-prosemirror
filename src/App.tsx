@@ -10,7 +10,7 @@ import { CircularProgress } from "@mui/material";
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel";
 
 export interface DocType {
-  content: string;
+  text: string;
 }
 
 function initRepo() {
@@ -45,7 +45,7 @@ function App() {
     docHandle.whenReady().then(() => {
       if (created) {
         docHandle.change((doc) => {
-          doc.content = "";
+          doc.text = "";
         });
       }
       setLoading(false);
@@ -77,6 +77,7 @@ function App() {
       <Editor
         key={docHandle.url}
         docHandle={docHandle}
+        path={["text"]}
         sync={{
           subscribeToChanges: (handler) => {
             docHandle.on("change", handler);
