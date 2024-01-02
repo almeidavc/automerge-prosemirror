@@ -20,7 +20,7 @@ import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
 export const EditorSchema = schema;
 
 interface EditorProps {
-  viewRef?: MutableRefObject<EditorView>;
+  viewRef?: MutableRefObject<EditorView | null>;
   docHandle: DocHandle<DocType>;
   path: Automerge.Prop[];
   sync: {

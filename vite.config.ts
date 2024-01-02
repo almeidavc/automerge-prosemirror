@@ -6,9 +6,14 @@ import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineConfig({
   plugins: [topLevelAwait(), wasm(), react()],
-
   worker: {
     format: "es",
-    plugins: wasm(),
+    plugins: [wasm()],
+  },
+  // this is so vite serves files outside of workspace root, when using symlinked packages
+  server: {
+    fs: {
+      strict: false,
+    },
   },
 });
