@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { schema } from "prosemirror-schema-basic";
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -11,6 +11,7 @@ import {
   AutomergePlugin,
   automergePlugin,
   getLastHeads,
+  getLastSpans,
 } from "./integration/plugin.ts";
 import { next as Automerge } from "@automerge/automerge";
 import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
@@ -19,6 +20,7 @@ import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
 export const EditorSchema = schema;
 
 interface EditorProps {
+  viewRef?: MutableRefObject<EditorView>;
   docHandle: DocHandle<DocType>;
   path: Automerge.Prop[];
   sync: {
@@ -32,7 +34,7 @@ interface EditorProps {
 }
 
 // assumes the doc is ready
-export function Editor({ docHandle, path, sync }: EditorProps) {
+export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
   const mountTargetRef = useRef<HTMLDivElement>(null);
 
   const editorViewRef = useRef<EditorView | null>(null);
@@ -44,7 +46,7 @@ export function Editor({ docHandle, path, sync }: EditorProps) {
       throw Error("doc is not ready");
     }
 
-    const plugin = automergePlugin(doc);
+    const plugin = automergePlugin(doc, path);
     const view = new EditorView(mountTargetRef.current, {
       state: EditorState.create({
         schema: EditorSchema,
@@ -76,6 +78,9 @@ export function Editor({ docHandle, path, sync }: EditorProps) {
 
     editorPluginRef.current = plugin;
     editorViewRef.current = view;
+    if (viewRef) {
+      viewRef.current = view;
+    }
 
     return () => {
       view.destroy();
@@ -92,12 +97,17 @@ export function Editor({ docHandle, path, sync }: EditorProps) {
       }
 
       const patches = payload.patches;
-      const newHeads = Automerge.getHeads(payload.doc);
 
       console.log("marks", Automerge.marks(payload.doc, path.slice()));
       console.log("patches", patches);
 
-      reconcilePmEditor(view, view.state, patches, newHeads);
+      reconcilePmEditor(
+        view,
+        view.state,
+        payload,
+        getLastSpans(plugin, view.state),
+        path.slice(),
+      );
     };
 
     sync.subscribeToChanges(handler);
@@ -112,12 +122,6 @@ export function Editor({ docHandle, path, sync }: EditorProps) {
       ref={mountTargetRef}
       // "editor" id is required so that styles are applied properly
       id={"editor"}
-      // disable "Enter" key as it creates a new paragraph node and blocks are not yet supported
-      onKeyDownCapture={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-        }
-      }}
     />
   );
 }

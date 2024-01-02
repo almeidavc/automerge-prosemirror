@@ -10,11 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@automerge/automerge": "^2.1.8-alpha.1",
-    "@automerge/automerge-repo": "^1.0.19",
-    "@automerge/automerge-repo-network-broadcastchannel": "^1.0.19",
-    "@automerge/automerge-repo-react-hooks": "^1.0.19",
-    "@automerge/automerge-repo-storage-indexeddb": "^1.0.19",
+    "@automerge/automerge-repo": "file:../automerge-automerge-repo-1.1.0-alpha.7.tgz",
+    "@automerge/automerge-repo-network-broadcastchannel": "file:../automerge-automerge-repo-network-broadcastchannel-1.1.0-alpha.7.tgz",
+    "@automerge/automerge-wasm": "../automerge-automerge-wasm-0.7.0.tgz",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.1",
     "prosemirror-commands": "^1.5.2",
     "prosemirror-example-setup": "^1.2.2",
     "prosemirror-keymap": "^1.2.2",
@@ -33,11 +34,13 @@
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "clipboardy": "^4.0.0",
+    "cypress": "^13.6.1",
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
     "prettier": "^3.1.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.0"
+    "vite": "3.0.0"
   }
 }

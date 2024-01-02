@@ -4,10 +4,10 @@ import {
   isValidAutomergeUrl,
   DocHandle,
 } from "@automerge/automerge-repo";
-import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel";
+import { next as Automerge } from "@automerge/automerge";
 
 export interface DocType {
   text: string;
@@ -16,7 +16,6 @@ export interface DocType {
 function initRepo() {
   return new Repo({
     network: [new BroadcastChannelNetworkAdapter()],
-    storage: new IndexedDBStorageAdapter(),
   });
 }
 
@@ -39,6 +38,14 @@ function App() {
       docHandle = repo.create<DocType>();
       created = true;
     }
+
+    docHandle.on("change", (payload) => {
+      console.log("spans", Automerge.spans(payload.doc, ["text"]));
+      console.log(
+        "doc",
+        Automerge.getHistory(payload.doc).map((state) => state.change),
+      );
+    });
 
     setDocHandle(docHandle);
 

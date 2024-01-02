@@ -1,12 +1,13 @@
 import { DocHandle } from "@automerge/automerge-repo";
-import { DocType } from "../App.tsx";
-import { next as Automerge } from "automerge-blocks3";
+import { DocType } from "../App";
+import { next as Automerge } from "@automerge/automerge";
 import { Transaction } from "prosemirror-state";
 import {
   AddMarkStep,
   RemoveMarkStep,
   ReplaceStep,
 } from "prosemirror-transform";
+import { PmToAmIndexMapper } from "./mapIndices.ts";
 
 function getMarkExpandProperty(mark: string) {
   switch (mark) {
@@ -19,10 +20,6 @@ function getMarkExpandProperty(mark: string) {
   }
 }
 
-function mapPmIndexToAm(index: number) {
-  return index - 1;
-}
-
 export function applyChangesToAm(
   docHandle: DocHandle<DocType>,
   path: Automerge.Prop[],
@@ -31,20 +28,35 @@ export function applyChangesToAm(
 ) {
   let newHeads;
 
-  transaction.steps.forEach((step) => {
+  transaction.steps.forEach((step, i) => {
+    const docBeforeStep = transaction.docs[i];
+    const indexMapper = new PmToAmIndexMapper(docBeforeStep);
+
     // this path handles pasting and inserting text
     // for each text node:
     // - we insert the corresponding text
     // - reconcile the marks in the doc so that they are consistent with the marks contained in the text node
     if (step instanceof ReplaceStep) {
       newHeads = docHandle.changeAt(lastHeads, (doc) => {
-        let currAmIndex = mapPmIndexToAm(step.from);
+        let amFromIndex = indexMapper.map(step.from);
 
         // first remove any deleted characters
         // is the case when user presses backspace or selection is not empty and user deletes or inserts characters
         if (step.to - step.from > 0) {
           // splice() mutates path argument
-          Automerge.splice(doc, path.slice(), currAmIndex, step.to - step.from);
+          Automerge.splice(
+            doc,
+            path.slice(),
+            amFromIndex,
+            indexMapper.map(step.to) - indexMapper.map(step.from),
+          );
+        }
+
+        if (step.slice.openStart === 1 && step.slice.openEnd === 1) {
+          Automerge.splitBlock(doc, path.slice(), amFromIndex, {
+            type: new Automerge.RawString("paragraph"),
+          });
+          return;
         }
 
         step.slice.content.forEach((node) => {
@@ -58,13 +70,13 @@ export function applyChangesToAm(
             return;
           }
 
-          Automerge.splice(doc, path.slice(), currAmIndex, 0, node.text);
+          Automerge.splice(doc, path.slice(), amFromIndex, 0, node.text);
 
           // reconcile the marks in the doc with the marks of the inserted text
           // this is necessary, when:
           // - selection is empty (otherwise we apply the mark in the AddMarkStep)
           // - mark is not implicit, e.g. inserted character should be bolded, but previous characters aren't
-          const amMarks = Automerge.marksAt(doc, path.slice(), currAmIndex);
+          const amMarks = Automerge.marksAt(doc, path.slice(), amFromIndex);
 
           // add missing marks
           for (const textMark of node.marks ?? []) {
@@ -76,8 +88,9 @@ export function applyChangesToAm(
                 doc,
                 path.slice(),
                 {
-                  start: currAmIndex,
-                  end: currAmIndex + node.text.length,
+                  start: amFromIndex,
+                  // TODO: not sure if this works with blocks
+                  end: amFromIndex + node.text.length,
                   expand: "after",
                 },
                 textMark.type.name,
@@ -102,8 +115,8 @@ export function applyChangesToAm(
                 doc,
                 path.slice(),
                 {
-                  start: currAmIndex,
-                  end: currAmIndex + node.text.length,
+                  start: amFromIndex,
+                  end: amFromIndex + node.text.length,
                   expand: "after",
                 },
                 amMark,
@@ -111,7 +124,7 @@ export function applyChangesToAm(
             }
           }
 
-          currAmIndex += node.text.length;
+          amFromIndex += node.text.length;
         });
       });
     }
@@ -125,8 +138,8 @@ export function applyChangesToAm(
           doc,
           path.slice(),
           {
-            start: step.from - 1,
-            end: step.to - 1,
+            start: indexMapper.map(step.from),
+            end: indexMapper.map(step.to),
             expand,
           },
           mark,
@@ -144,8 +157,8 @@ export function applyChangesToAm(
           doc,
           path.slice(),
           {
-            start: step.from - 1,
-            end: step.to - 1,
+            start: indexMapper.map(step.from),
+            end: indexMapper.map(step.to),
             expand,
           },
           mark,
