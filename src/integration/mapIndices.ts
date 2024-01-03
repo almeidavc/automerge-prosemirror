@@ -17,8 +17,9 @@ export class PmToAmIndexMapper {
   // delimits two blocks, while in Prosemirror blocks have and start and end delimiters
   map(index: number) {
     const resolvedPos = this.#pmDoc.resolve(index);
-    const paragraphIndex = resolvedPos.index(0);
-    return index - paragraphIndex - 1;
+    // nth paragraph has position n
+    const paragraphPos = resolvedPos.index(0) + 1;
+    return index - paragraphPos;
   }
 }
 
@@ -32,7 +33,8 @@ export class AmToPmIndexMapper {
 
   map(index: number) {
     const spans = this.#amSpans;
-    let numberOfPrecedingBlocks = 0;
+    // position of block that includes index
+    let blockPos = 1;
 
     let currIndex = 0;
     for (const span of spans) {
@@ -41,7 +43,7 @@ export class AmToPmIndexMapper {
       }
 
       if (span.type === "block") {
-        numberOfPrecedingBlocks += 1;
+        blockPos += 1;
       }
 
       currIndex +=
@@ -52,6 +54,6 @@ export class AmToPmIndexMapper {
             : 0;
     }
 
-    return index + numberOfPrecedingBlocks + 1;
+    return index + blockPos;
   }
 }
