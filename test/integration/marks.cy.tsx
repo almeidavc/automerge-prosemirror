@@ -62,7 +62,7 @@ describe.only("marks", () => {
       });
   });
 
-  it("add mark, insert", () => {
+  it("enable bold mark while selection empty, insert character", () => {
     cy.get(PM_EDITOR).type("{cmd}b");
     cy.get(PM_EDITOR)
       .type("fox")
@@ -86,28 +86,7 @@ describe.only("marks", () => {
       });
   });
 
-  it("activating mark, then deleting a character deactivates mark", () => {
-    cy.get(PM_EDITOR).type("fox");
-
-    cy.get(PM_EDITOR).type("{cmd}b");
-    cy.get(PM_EDITOR).type("{backspace}");
-    cy.get(PM_EDITOR)
-      .type("x")
-      .then(() => {
-        const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-        assertAmSpans(spans, [{ type: "text", value: "fox" }]);
-
-        const actualDoc = editorViewRef.current?.state.doc;
-        const { doc: expectedDoc } = EditorState.create({
-          doc: EditorSchema.node(EditorSchema.topNodeType, null, [
-            EditorSchema.node("paragraph", null, EditorSchema.text("fox")),
-          ]),
-        });
-        expect(actualDoc).to.deep.equal(expectedDoc);
-      });
-  });
-
-  it("deactivating mark and inserting character", () => {
+  it("disable bold mark while selection empty, insert character", () => {
     cy.get(PM_EDITOR).type("fox");
     cy.get(PM_EDITOR).type("{selectAll}");
     cy.get(PM_EDITOR).type("{cmd}b");
@@ -130,6 +109,27 @@ describe.only("marks", () => {
               EditorSchema.text("fox", [EditorSchema.mark("strong")]),
               EditorSchema.text("a"),
             ]),
+          ]),
+        });
+        expect(actualDoc).to.deep.equal(expectedDoc);
+      });
+  });
+
+  it("activating mark, then deleting a character deactivates mark", () => {
+    cy.get(PM_EDITOR).type("fox");
+
+    cy.get(PM_EDITOR).type("{cmd}b");
+    cy.get(PM_EDITOR).type("{backspace}");
+    cy.get(PM_EDITOR)
+      .type("x")
+      .then(() => {
+        const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+        assertAmSpans(spans, [{ type: "text", value: "fox" }]);
+
+        const actualDoc = editorViewRef.current?.state.doc;
+        const { doc: expectedDoc } = EditorState.create({
+          doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+            EditorSchema.node("paragraph", null, EditorSchema.text("fox")),
           ]),
         });
         expect(actualDoc).to.deep.equal(expectedDoc);

@@ -35,7 +35,7 @@ describe("blocks", () => {
       });
   });
 
-  it("create block and insert character", () => {
+  it("create block, insert character", () => {
     cy.get(PM_EDITOR)
       .type("{enter}a")
       .then(() => {
