@@ -26,18 +26,20 @@ export function applyChangesToAm(
   lastHeads: Automerge.Heads,
   transaction: Transaction,
 ) {
-  let newHeads;
+  if (transaction.steps.length === 0) {
+    return lastHeads;
+  }
 
-  transaction.steps.forEach((step, i) => {
-    const docBeforeStep = transaction.docs[i];
-    const indexMapper = new PmToAmIndexMapper(docBeforeStep);
+  return docHandle.changeAt(lastHeads, (doc) => {
+    transaction.steps.forEach((step, i) => {
+      const docBeforeStep = transaction.docs[i];
+      const indexMapper = new PmToAmIndexMapper(docBeforeStep);
 
-    // this path handles pasting and inserting text
-    // for each text node:
-    // - we insert the corresponding text
-    // - reconcile the marks in the doc so that they are consistent with the marks contained in the text node
-    if (step instanceof ReplaceStep) {
-      newHeads = docHandle.changeAt(lastHeads, (doc) => {
+      // this path handles pasting and inserting text
+      // for each text node:
+      // - we insert the corresponding text
+      // - reconcile the marks in the doc so that they are consistent with the marks contained in the text node
+      if (step instanceof ReplaceStep) {
         let amFromIndex = indexMapper.map(step.from);
 
         // first remove any deleted characters
@@ -126,14 +128,12 @@ export function applyChangesToAm(
 
           amFromIndex += node.text.length;
         });
-      });
-    }
+      }
 
-    if (step instanceof AddMarkStep) {
-      const mark = step.mark.type.name;
-      const expand = getMarkExpandProperty(mark);
+      if (step instanceof AddMarkStep) {
+        const mark = step.mark.type.name;
+        const expand = getMarkExpandProperty(mark);
 
-      newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.mark(
           doc,
           path.slice(),
@@ -145,14 +145,12 @@ export function applyChangesToAm(
           mark,
           true,
         );
-      });
-    }
+      }
 
-    if (step instanceof RemoveMarkStep) {
-      const mark = step.mark.type.name;
-      const expand = getMarkExpandProperty(mark);
+      if (step instanceof RemoveMarkStep) {
+        const mark = step.mark.type.name;
+        const expand = getMarkExpandProperty(mark);
 
-      newHeads = docHandle.changeAt(lastHeads, (doc) => {
         Automerge.unmark(
           doc,
           path.slice(),
@@ -163,9 +161,7 @@ export function applyChangesToAm(
           },
           mark,
         );
-      });
-    }
+      }
+    });
   });
-
-  return newHeads || lastHeads;
 }
