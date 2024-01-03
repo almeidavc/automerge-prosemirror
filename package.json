@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "cypress open",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cy:open": "cypress open --component --browser chrome",
+    "cy:run": "cypress run --component",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@automerge/automerge-repo": "file:../automerge-automerge-repo-1.1.0-alpha.7.tgz",
@@ -41,6 +43,7 @@
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
+    "husky": "^8.0.3",
     "prettier": "^3.1.0",
     "typescript": "^5.2.2",
     "vite": "3.0.0"
