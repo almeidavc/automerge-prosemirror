@@ -32,6 +32,14 @@ export function applyChangesToAm(
 
   return docHandle.changeAt(lastHeads, (doc) => {
     transaction.steps.forEach((step, i) => {
+      if (
+        !(step instanceof ReplaceStep) &&
+        !(step instanceof AddMarkStep) &&
+        !(step instanceof RemoveMarkStep)
+      ) {
+        throw Error(`Step ${step.constructor.name} is not supported`);
+      }
+
       const docBeforeStep = transaction.docs[i];
       const indexMapper = new PmToAmIndexMapper(docBeforeStep);
 
@@ -45,6 +53,14 @@ export function applyChangesToAm(
         // first remove any deleted characters
         // is the case when user presses backspace or selection is not empty and user deletes or inserts characters
         if (step.to - step.from > 0) {
+          // handle case where selection includes block delimiters, starts at the first character of the doc, and
+          // ends at an arbitrary character, that is not the last. In this scenario, Prosemirror deletes the start tag
+          // of the first paragraph and inserts it again, which is redundant
+          if (step.from === 0) {
+            Automerge.splice(doc, path.slice(), 0, indexMapper.map(step.to));
+            return;
+          }
+
           // splice() mutates path argument
           Automerge.splice(
             doc,

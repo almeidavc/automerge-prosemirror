@@ -161,4 +161,66 @@ describe("blocks", () => {
         });
     },
   );
+
+  it(
+    "select range of characters that includes block delimiters, starts at the first character, and does not contain " +
+      "the last character and press backspace",
+    () => {
+      cy.get(PM_EDITOR).type("a{enter}bb");
+      cy.get(PM_EDITOR).realPress([
+        "ArrowLeft",
+        "Shift",
+        "ArrowLeft",
+        "ArrowLeft",
+        "ArrowLeft",
+      ]);
+      cy.get(PM_EDITOR)
+        .type("{backspace}")
+        .then(() => {
+          const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+          expect(spans).to.deep.equal([{ type: "text", value: "b" }]);
+
+          const actualDoc = editorViewRef.current?.state.doc;
+          const { doc: expectedDoc } = EditorState.create({
+            doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+              EditorSchema.node("paragraph", null, EditorSchema.text("b")),
+            ]),
+          });
+          expect(actualDoc).to.deep.equal(expectedDoc);
+        });
+    },
+  );
+
+  it(
+    "select range of characters that includes block delimiters, starts at the first character, and does not contain " +
+      "the last character and press enter",
+    () => {
+      cy.get(PM_EDITOR).type("a{enter}bb");
+      cy.get(PM_EDITOR).realPress([
+        "ArrowLeft",
+        "Shift",
+        "ArrowLeft",
+        "ArrowLeft",
+        "ArrowLeft",
+      ]);
+      cy.get(PM_EDITOR)
+        .type("{enter}")
+        .then(() => {
+          const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+          expect(spans).to.deep.equal([
+            { type: "block", value: { type: "paragraph" } },
+            { type: "text", value: "b" },
+          ]);
+
+          const actualDoc = editorViewRef.current?.state.doc;
+          const { doc: expectedDoc } = EditorState.create({
+            doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+              EditorSchema.node("paragraph", null),
+              EditorSchema.node("paragraph", null, EditorSchema.text("b")),
+            ]),
+          });
+          expect(actualDoc).to.deep.equal(expectedDoc);
+        });
+    },
+  );
 });
