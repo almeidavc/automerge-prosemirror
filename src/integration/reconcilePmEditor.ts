@@ -2,10 +2,14 @@ import { EditorState } from "prosemirror-state";
 import { next as Automerge } from "@automerge/automerge";
 import { EditorSchema } from "../Editor.tsx";
 import { EditorView } from "prosemirror-view";
-import { DocHandleChangePayload } from "@automerge/automerge-repo";
 import { DocType } from "../App.tsx";
 import { AmToPmIndexMapper } from "./mapIndices.ts";
 import { Span } from "./tmp.ts";
+
+interface AmChange<T> {
+  doc: Automerge.Doc<T>;
+  patches: Automerge.Patch[];
+}
 
 function mapPatchesToPmTransaction(
   state: EditorState,
@@ -70,7 +74,7 @@ function mapPatchesToPmTransaction(
 export function reconcilePmEditor(
   view: EditorView,
   state: EditorState,
-  change: DocHandleChangePayload<DocType>,
+  change: AmChange<DocType>,
   lastSpans: Span[],
   path: Automerge.Prop[],
 ) {
