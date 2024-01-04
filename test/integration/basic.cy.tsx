@@ -7,7 +7,7 @@ import { EditorSchema } from "../../src/Editor.tsx";
 import { PM_EDITOR, setupEditor } from "./utils.tsx";
 import { next as Automerge } from "@automerge/automerge";
 
-describe.only("basic", () => {
+describe("basic", () => {
   const editorViewRef = React.createRef<EditorView>();
   let docHandle: DocHandle<DocType>;
 

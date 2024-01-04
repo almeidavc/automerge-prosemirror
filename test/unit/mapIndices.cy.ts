@@ -9,7 +9,7 @@ import { DocType } from "../../src/App.tsx";
 
 const PATH = ["text"];
 
-describe.only("mapIndices", () => {
+describe("mapIndices", () => {
   it("default top-level block", () => {
     // PM: "<p>fox</p>"
     // AM: "fox"

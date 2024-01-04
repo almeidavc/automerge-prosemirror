@@ -7,7 +7,7 @@ import { EditorSchema } from "../../src/Editor.tsx";
 import { assertAmSpans, PM_EDITOR, setupEditor } from "./utils.tsx";
 import { next as Automerge } from "@automerge/automerge";
 
-describe.only("marks", () => {
+describe("inline marks", () => {
   const editorViewRef = React.createRef<EditorView>();
   let docHandle: DocHandle<DocType>;
 

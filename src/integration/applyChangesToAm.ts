@@ -142,6 +142,7 @@ export function applyChangesToAm(
             }
           }
 
+          // TODO: this doesn't work with blocks
           amFromIndex += node.text.length;
         });
       }
