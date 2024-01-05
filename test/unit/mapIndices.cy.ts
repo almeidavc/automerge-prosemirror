@@ -1,5 +1,5 @@
 import { EditorState } from "prosemirror-state";
-import { EditorSchema } from "../../src/Editor.tsx";
+import { EditorSchema } from "../../src/schema.ts";
 import {
   PmToAmIndexMapper,
   AmToPmIndexMapper,

@@ -1,5 +1,4 @@
 import { MutableRefObject, useEffect, useRef } from "react";
-import { schema } from "prosemirror-schema-basic";
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { exampleSetup } from "prosemirror-example-setup";
@@ -16,9 +15,8 @@ import {
 import { next as Automerge } from "@automerge/automerge";
 import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
 import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
+import { EditorSchema } from "./schema.ts";
 import { parseDoc } from "./integration/parseDoc.ts";
-
-export const EditorSchema = schema;
 
 interface EditorProps {
   viewRef?: MutableRefObject<EditorView | null>;

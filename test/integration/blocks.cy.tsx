@@ -1,4 +1,4 @@
-import { EditorSchema } from "../../src/Editor.tsx";
+import { EditorSchema } from "../../src/schema.ts";
 import { DocHandle } from "@automerge/automerge-repo";
 import { DocType } from "../../src/App.tsx";
 import { next as Automerge } from "@automerge/automerge";

@@ -1,6 +1,6 @@
 import { EditorState } from "prosemirror-state";
 import { next as Automerge } from "@automerge/automerge";
-import { EditorSchema } from "../Editor.tsx";
+import { EditorSchema } from "../schema.ts";
 import { EditorView } from "prosemirror-view";
 import { DocType } from "../App.tsx";
 import { AmToPmIndexMapper } from "./mapIndices.ts";
