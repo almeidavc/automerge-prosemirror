@@ -57,7 +57,12 @@ export function applyChangesToAm(
           // ends at an arbitrary character, that is not the last. In this scenario, Prosemirror deletes the start tag
           // of the first paragraph and inserts it again, which is redundant
           if (step.from === 0) {
-            Automerge.splice(doc, path.slice(), 0, indexMapper.map(step.to));
+            Automerge.splice(
+              doc,
+              path.slice(),
+              indexMapper.map(1),
+              indexMapper.map(step.to) - indexMapper.map(1),
+            );
             return;
           }
 
@@ -72,7 +77,7 @@ export function applyChangesToAm(
 
         if (step.slice.openStart === 1 && step.slice.openEnd === 1) {
           Automerge.splitBlock(doc, path.slice(), amFromIndex, {
-            type: new Automerge.RawString("paragraph"),
+            type: new Automerge.RawString("p"),
           });
           return;
         }

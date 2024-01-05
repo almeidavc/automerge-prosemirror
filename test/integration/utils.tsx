@@ -4,6 +4,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { DocType } from "../../src/App.tsx";
 import { Editor } from "../../src/Editor.tsx";
 import { Span } from "../../src/integration/tmp.ts";
+import { initDoc } from "../../src/integration/initDoc.ts";
 
 export const PM_EDITOR = ".ProseMirror[contenteditable]";
 
@@ -12,9 +13,7 @@ export function setupEditor(ref?: React.RefObject<EditorView>) {
     network: [],
   });
   const docHandle = repo.create<DocType>();
-  docHandle.change((doc) => {
-    doc.text = "";
-  });
+  initDoc(docHandle);
   cy.mount(
     <Editor
       viewRef={ref}

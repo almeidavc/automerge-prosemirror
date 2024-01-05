@@ -12,8 +12,12 @@ const PATH = ["text"];
 describe("mapIndices", () => {
   it("default top-level block", () => {
     // PM: "<p>fox</p>"
-    // AM: "fox"
-    const amDoc = Automerge.from({ text: "fox" });
+    // AM: "<split />fox"
+    const amDoc = Automerge.change(Automerge.init<DocType>(), (doc) => {
+      doc.text = "";
+      Automerge.splitBlock(doc, PATH.slice(), 0, null);
+      Automerge.splice(doc, PATH.slice(), 1, 0, "fox");
+    });
     const editorState = EditorState.create({
       doc: EditorSchema.node(
         EditorSchema.topNodeType,
@@ -25,30 +29,32 @@ describe("mapIndices", () => {
     const pmToAm = new PmToAmIndexMapper(editorState.doc);
     const amToPm = new AmToPmIndexMapper(Automerge.spans(amDoc, PATH.slice()));
 
-    expect(pmToAm.map(1)).to.equal(0);
-    expect(amToPm.map(0)).to.equal(1);
+    expect(pmToAm.map(1)).to.equal(1);
+    expect(amToPm.map(1)).to.equal(1);
 
-    expect(pmToAm.map(2)).to.equal(1);
-    expect(amToPm.map(1)).to.equal(2);
+    expect(pmToAm.map(2)).to.equal(2);
+    expect(amToPm.map(2)).to.equal(2);
 
-    expect(pmToAm.map(3)).to.equal(2);
-    expect(amToPm.map(2)).to.equal(3);
+    expect(pmToAm.map(3)).to.equal(3);
+    expect(amToPm.map(3)).to.equal(3);
 
-    expect(pmToAm.map(4)).to.equal(3);
-    expect(amToPm.map(3)).to.equal(4);
+    expect(pmToAm.map(4)).to.equal(4);
+    expect(amToPm.map(4)).to.equal(4);
   });
 
   it("four top-level paragraphs", () => {
     // PM: "<p>a</p><p>b</p><p>c</p><p>def</p>"
-    // AM: "a<splitblock />b<splitblock />c<splitblock />def"
+    // AM: "<split />a<split />b<split />c<split />def"
     const amDoc = Automerge.change(Automerge.init<DocType>(), (doc) => {
-      doc.text = "a";
-      Automerge.splitBlock(doc, PATH.slice(), 1, null);
-      Automerge.splice(doc, PATH.slice(), 2, 0, "b");
-      Automerge.splitBlock(doc, PATH.slice(), 3, null);
-      Automerge.splice(doc, PATH.slice(), 4, 0, "c");
-      Automerge.splitBlock(doc, PATH.slice(), 5, null);
-      Automerge.splice(doc, PATH.slice(), 6, 0, "def");
+      doc.text = "";
+      Automerge.splitBlock(doc, PATH.slice(), 0, null);
+      Automerge.splice(doc, PATH.slice(), 1, 0, "a");
+      Automerge.splitBlock(doc, PATH.slice(), 2, null);
+      Automerge.splice(doc, PATH.slice(), 3, 0, "b");
+      Automerge.splitBlock(doc, PATH.slice(), 4, null);
+      Automerge.splice(doc, PATH.slice(), 5, 0, "c");
+      Automerge.splitBlock(doc, PATH.slice(), 6, null);
+      Automerge.splice(doc, PATH.slice(), 7, 0, "def");
     });
     const editorState = EditorState.create({
       doc: EditorSchema.node(EditorSchema.topNodeType, null, [
@@ -62,34 +68,32 @@ describe("mapIndices", () => {
     const pmToAm = new PmToAmIndexMapper(editorState.doc);
     const amToPm = new AmToPmIndexMapper(Automerge.spans(amDoc, PATH.slice()));
 
-    expect(pmToAm.map(1)).to.equal(0);
-    expect(amToPm.map(0)).to.equal(1);
+    // a
+    expect(pmToAm.map(1)).to.equal(1);
+    expect(amToPm.map(1)).to.equal(1);
+    expect(pmToAm.map(2)).to.equal(2);
+    expect(amToPm.map(2)).to.equal(2);
 
-    expect(pmToAm.map(2)).to.equal(1);
-    expect(amToPm.map(1)).to.equal(2);
+    // b
+    expect(pmToAm.map(4)).to.equal(3);
+    expect(amToPm.map(3)).to.equal(4);
+    expect(pmToAm.map(5)).to.equal(4);
+    expect(amToPm.map(4)).to.equal(5);
 
-    expect(pmToAm.map(4)).to.equal(2);
-    expect(amToPm.map(2)).to.equal(4);
+    // c
+    expect(pmToAm.map(7)).to.equal(5);
+    expect(amToPm.map(5)).to.equal(7);
+    expect(pmToAm.map(8)).to.equal(6);
+    expect(amToPm.map(6)).to.equal(8);
 
-    expect(pmToAm.map(5)).to.equal(3);
-    expect(amToPm.map(3)).to.equal(5);
-
-    expect(pmToAm.map(7)).to.equal(4);
-    expect(amToPm.map(4)).to.equal(7);
-
-    expect(pmToAm.map(8)).to.equal(5);
-    expect(amToPm.map(5)).to.equal(8);
-
-    expect(pmToAm.map(10)).to.equal(6);
-    expect(amToPm.map(6)).to.equal(10);
-
-    expect(pmToAm.map(11)).to.equal(7);
-    expect(amToPm.map(7)).to.equal(11);
-
-    expect(pmToAm.map(12)).to.equal(8);
-    expect(amToPm.map(8)).to.equal(12);
-
-    expect(pmToAm.map(13)).to.equal(9);
-    expect(amToPm.map(9)).to.equal(13);
+    // def
+    expect(pmToAm.map(10)).to.equal(7);
+    expect(amToPm.map(7)).to.equal(10);
+    expect(pmToAm.map(11)).to.equal(8);
+    expect(amToPm.map(8)).to.equal(11);
+    expect(pmToAm.map(12)).to.equal(9);
+    expect(amToPm.map(9)).to.equal(12);
+    expect(pmToAm.map(13)).to.equal(10);
+    expect(amToPm.map(10)).to.equal(13);
   });
 });

@@ -23,6 +23,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
+          { type: "block", value: { type: "p" } },
           { type: "text", value: "fox", marks: { strong: true } },
         ]);
 
@@ -50,7 +51,10 @@ describe("inline marks", () => {
       .type("{cmd}b")
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-        assertAmSpans(spans, [{ type: "text", value: "fox" }]);
+        assertAmSpans(spans, [
+          { type: "block", value: { type: "p" } },
+          { type: "text", value: "fox" },
+        ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
         const { doc: expectedDoc } = EditorState.create({
@@ -69,6 +73,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
+          { type: "block", value: { type: "p" } },
           { type: "text", value: "fox", marks: { strong: true } },
         ]);
 
@@ -98,6 +103,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
+          { type: "block", value: { type: "p" } },
           { type: "text", value: "fox", marks: { strong: true } },
           { type: "text", value: "a" },
         ]);
@@ -124,7 +130,10 @@ describe("inline marks", () => {
       .type("x")
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-        assertAmSpans(spans, [{ type: "text", value: "fox" }]);
+        assertAmSpans(spans, [
+          { type: "block", value: { type: "p" } },
+          { type: "text", value: "fox" },
+        ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
         const { doc: expectedDoc } = EditorState.create({

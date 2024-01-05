@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel";
 import { next as Automerge } from "@automerge/automerge";
+import { initDoc } from "./integration/initDoc.ts";
 
 export interface DocType {
   text: string;
@@ -51,9 +52,7 @@ function App() {
 
     docHandle.whenReady().then(() => {
       if (created) {
-        docHandle.change((doc) => {
-          doc.text = "";
-        });
+        initDoc(docHandle);
       }
       setLoading(false);
     });

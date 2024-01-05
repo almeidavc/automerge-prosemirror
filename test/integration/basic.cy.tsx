@@ -19,7 +19,10 @@ describe("basic", () => {
     cy.get(PM_EDITOR).type("fox");
     cy.get(PM_EDITOR).then(() => {
       const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-      expect(spans).to.deep.equal([{ type: "text", value: "fox" }]);
+      expect(spans).to.deep.equal([
+        { type: "block", value: { type: "p" } },
+        { type: "text", value: "fox" },
+      ]);
 
       const actualDoc = editorViewRef.current?.state.doc;
       const { doc: expectedDoc } = EditorState.create({
@@ -30,14 +33,13 @@ describe("basic", () => {
       expect(actualDoc).to.deep.equal(expectedDoc);
     });
   });
-
   it("insert, delete", () => {
     cy.get(PM_EDITOR).type("fox");
 
     cy.get(PM_EDITOR).type("{backspace}{backspace}{backspace}");
     cy.get(PM_EDITOR).then(() => {
       const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-      expect(spans).to.deep.equal([]);
+      expect(spans).to.deep.equal([{ type: "block", value: { type: "p" } }]);
 
       const actualDoc = editorViewRef.current?.state.doc;
       const { doc: expectedDoc } = EditorState.create({

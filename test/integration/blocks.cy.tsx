@@ -21,7 +21,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "p" } },
         ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
@@ -41,7 +42,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "p" } },
           { type: "text", value: "a" },
         ]);
 
@@ -63,7 +65,10 @@ describe("blocks", () => {
       .type("{backspace}")
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-        expect(spans).to.deep.equal([{ type: "text", value: "fox" }]);
+        expect(spans).to.deep.equal([
+          { type: "block", value: { type: "p" } },
+          { type: "text", value: "fox" },
+        ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
         const { doc: expectedDoc } = EditorState.create({
@@ -83,7 +88,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "p" } },
         ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
@@ -114,7 +120,10 @@ describe("blocks", () => {
         .type("{backspace}")
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-          expect(spans).to.deep.equal([{ type: "text", value: "foox" }]);
+          expect(spans).to.deep.equal([
+            { type: "block", value: { type: "p" } },
+            { type: "text", value: "foox" },
+          ]);
 
           const actualDoc = editorViewRef.current?.state.doc;
           const { doc: expectedDoc } = EditorState.create({
@@ -145,8 +154,9 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
+            { type: "block", value: { type: "p" } },
             { type: "text", value: "fo" },
-            { type: "block", value: { type: "paragraph" } },
+            { type: "block", value: { type: "p" } },
             { type: "text", value: "ox" },
           ]);
 
@@ -178,7 +188,10 @@ describe("blocks", () => {
         .type("{backspace}")
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-          expect(spans).to.deep.equal([{ type: "text", value: "b" }]);
+          expect(spans).to.deep.equal([
+            { type: "block", value: { type: "p" } },
+            { type: "text", value: "b" },
+          ]);
 
           const actualDoc = editorViewRef.current?.state.doc;
           const { doc: expectedDoc } = EditorState.create({
@@ -208,7 +221,8 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
-            { type: "block", value: { type: "paragraph" } },
+            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "p" } },
             { type: "text", value: "b" },
           ]);
 
