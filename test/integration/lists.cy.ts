@@ -15,34 +15,49 @@ describe.skip("lists", () => {
     docHandle = setupEditor(editorViewRef);
   });
 
-  it(
-    "pressing hyphen + space at the start of a paragraph, converts the paragraph to a bullet list and creates" +
-      " a list item",
-    () => {
-      cy.get(PM_EDITOR)
-        .type("- ")
-        .then(() => {
-          const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-          expect(spans).to.deep.equal([
-            { type: "block", value: { type: "uli" } },
-          ]);
+  it("turn paragraph to a list item", () => {
+    cy.get(PM_EDITOR)
+      .type("- ")
+      .then(() => {
+        const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+        expect(spans).to.deep.equal([
+          { type: "block", value: { type: "uli" } },
+        ]);
 
-          const actualDoc = editorViewRef.current?.state.doc;
-          const { doc: expectedDoc } = EditorState.create({
-            doc: EditorSchema.node(EditorSchema.topNodeType, null, [
-              EditorSchema.node("bullet_list", null, [
-                EditorSchema.node("list_item", null, [
-                  EditorSchema.node("paragraph", null),
-                ]),
+        const actualDoc = editorViewRef.current?.state.doc;
+        const { doc: expectedDoc } = EditorState.create({
+          doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+            EditorSchema.node("bullet_list", null, [
+              EditorSchema.node("list_item", null, [
+                EditorSchema.node("paragraph", null),
               ]),
             ]),
-          });
-          expect(actualDoc).to.deep.equal(expectedDoc);
+          ]),
         });
-    },
-  );
+        expect(actualDoc).to.deep.equal(expectedDoc);
+      });
+  });
 
-  it("pressing enter inside a non-empty list item, creates a new list item", () => {
+  it("turn list item to a paragraph", () => {
+    cy.get(PM_EDITOR).type("- ");
+
+    cy.get(PM_EDITOR)
+      .type("{enter}")
+      .then(() => {
+        const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+        expect(spans).to.deep.equal([{ type: "block", value: { type: "p" } }]);
+
+        const actualDoc = editorViewRef.current?.state.doc;
+        const { doc: expectedDoc } = EditorState.create({
+          doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+            EditorSchema.node("paragraph", null),
+          ]),
+        });
+        expect(actualDoc).to.deep.equal(expectedDoc);
+      });
+  });
+
+  it("split list item", () => {
     cy.get(PM_EDITOR).type("- fox");
 
     cy.get(PM_EDITOR)
@@ -72,19 +87,63 @@ describe.skip("lists", () => {
       });
   });
 
-  it("pressing enter in an an empty list item, converts the list item to a paragraph", () => {
-    cy.get(PM_EDITOR).type("- ");
+  it("nest block within list item", () => {
+    cy.get(PM_EDITOR).type("- fox{enter}");
 
     cy.get(PM_EDITOR)
-      .type("{enter}")
+      .type("{cmd}]")
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-        expect(spans).to.deep.equal([{ type: "block", value: { type: "p" } }]);
+        expect(spans).to.deep.equal([
+          { type: "block", value: { type: "uli" } },
+          { type: "text", value: "fox" },
+          { type: "block", value: { type: "uli", parent: "uli" } },
+        ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
         const { doc: expectedDoc } = EditorState.create({
           doc: EditorSchema.node(EditorSchema.topNodeType, null, [
-            EditorSchema.node("paragraph", null),
+            EditorSchema.node("bullet_list", null, [
+              EditorSchema.node("list_item", null, [
+                EditorSchema.node("paragraph", null, EditorSchema.text("fox")),
+                EditorSchema.node("bullet_list", null, [
+                  EditorSchema.node("list_item", null, [
+                    EditorSchema.node("paragraph", null),
+                  ]),
+                ]),
+              ]),
+            ]),
+          ]),
+        });
+        expect(actualDoc).to.deep.equal(expectedDoc);
+      });
+  });
+
+  it("lift block from underneath list item", () => {
+    cy.get(PM_EDITOR).type("- fox{enter}");
+    cy.get(PM_EDITOR).type("{cmd}]");
+
+    cy.get(PM_EDITOR)
+      .type("{cmd}[")
+      .then(() => {
+        const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
+        expect(spans).to.deep.equal([
+          { type: "block", value: { type: "uli" } },
+          { type: "text", value: "fox" },
+          { type: "block", value: { type: "uli" } },
+        ]);
+
+        const actualDoc = editorViewRef.current?.state.doc;
+        const { doc: expectedDoc } = EditorState.create({
+          doc: EditorSchema.node(EditorSchema.topNodeType, null, [
+            EditorSchema.node("bullet_list", null, [
+              EditorSchema.node("list_item", null, [
+                EditorSchema.node("paragraph", null, EditorSchema.text("fox")),
+              ]),
+              EditorSchema.node("list_item", null, [
+                EditorSchema.node("paragraph", null),
+              ]),
+            ]),
           ]),
         });
         expect(actualDoc).to.deep.equal(expectedDoc);
