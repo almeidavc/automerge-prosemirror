@@ -6,6 +6,7 @@ import { next as Automerge } from "@automerge/automerge";
 import { ChangeQueue } from "./ChangeQueue.ts";
 import { DocType } from "../App.tsx";
 import { EditorDemo } from "./EditorDemo.tsx";
+import { initDoc } from "../integration/initDoc.ts";
 
 function initRepo() {
   return new Repo({
@@ -23,9 +24,7 @@ function Demo() {
 
   const [doc1Handle] = useState(() => {
     const docHandle = repo.create<DocType>();
-    docHandle.change((doc) => {
-      doc.text = "";
-    });
+    initDoc(docHandle);
     return docHandle;
   });
 
