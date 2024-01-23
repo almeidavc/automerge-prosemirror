@@ -1,30 +1,27 @@
-# React + TypeScript + Vite
+# Automerge + ProseMirror Prototype
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repo contains a prototype for the integration between ProseMirror and Automerge. It consists of:
 
-Currently, two official plugins are available:
+- Core integration code, which lives under `src/integration`. This will be extracted into its own package in the future. 
+- Demos showcasing editors using this integration. There is a single Editor setup (`src/App.tsx`) and a side-by-side setup (`src/demo/Demo.tsx`);
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The code depends on the `blocks3` branch of Automerge, and so additional steps are needed to run the demos:
+```bash
+# Clone the automerge repo
+git clone https://github.com/automerge/automerge
 
-## Expanding the ESLint configuration
+# Checkout the "blocks3" branch
+cd automerge
+git checkout blocks3
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+# Install and run the local package registry
+cd javascript/e2e
+yarn install
+yarn e2e run-registry --profile release
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+# Run the demo in a separate terminal window:
+rm -rf node_modules
+rm yarn.lock
+yarn install --registry http://localhost:4873 --check-files
+yarn dev 
 ```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list

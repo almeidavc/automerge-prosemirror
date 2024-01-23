@@ -13,9 +13,10 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@automerge/automerge-repo": "file:../automerge-automerge-repo-1.1.0-alpha.7.tgz",
-    "@automerge/automerge-repo-network-broadcastchannel": "file:../automerge-automerge-repo-network-broadcastchannel-1.1.0-alpha.7.tgz",
-    "@automerge/automerge-wasm": "../automerge-automerge-wasm-0.7.0.tgz",
+    "@automerge/automerge": "^2.1.9",
+    "@automerge/automerge-repo": "^1.0.19",
+    "@automerge/automerge-repo-network-broadcastchannel": "^1.0.19",
+    "@automerge/automerge-wasm": "^0.7.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.1",
