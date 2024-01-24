@@ -23,7 +23,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox", marks: { strong: true } },
         ]);
 
@@ -52,7 +52,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox" },
         ]);
 
@@ -73,7 +73,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox", marks: { strong: true } },
         ]);
 
@@ -103,7 +103,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox", marks: { strong: true } },
           { type: "text", value: "a" },
         ]);
@@ -131,7 +131,7 @@ describe("inline marks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         assertAmSpans(spans, [
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox" },
         ]);
 

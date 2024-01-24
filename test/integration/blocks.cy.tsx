@@ -21,8 +21,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "p" } },
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "paragraph" } },
         ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
@@ -42,8 +42,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "p" } },
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "a" },
         ]);
 
@@ -66,7 +66,7 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
           { type: "text", value: "fox" },
         ]);
 
@@ -88,8 +88,8 @@ describe("blocks", () => {
       .then(() => {
         const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
         expect(spans).to.deep.equal([
-          { type: "block", value: { type: "p" } },
-          { type: "block", value: { type: "p" } },
+          { type: "block", value: { type: "paragraph" } },
+          { type: "block", value: { type: "paragraph" } },
         ]);
 
         const actualDoc = editorViewRef.current?.state.doc;
@@ -121,7 +121,7 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
-            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "paragraph" } },
             { type: "text", value: "foox" },
           ]);
 
@@ -154,9 +154,9 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
-            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "paragraph" } },
             { type: "text", value: "fo" },
-            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "paragraph" } },
             { type: "text", value: "ox" },
           ]);
 
@@ -189,7 +189,7 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
-            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "paragraph" } },
             { type: "text", value: "b" },
           ]);
 
@@ -221,8 +221,8 @@ describe("blocks", () => {
         .then(() => {
           const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
           expect(spans).to.deep.equal([
-            { type: "block", value: { type: "p" } },
-            { type: "block", value: { type: "p" } },
+            { type: "block", value: { type: "paragraph" } },
+            { type: "block", value: { type: "paragraph" } },
             { type: "text", value: "b" },
           ]);
 

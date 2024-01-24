@@ -20,7 +20,7 @@ describe("basic", () => {
     cy.get(PM_EDITOR).then(() => {
       const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
       expect(spans).to.deep.equal([
-        { type: "block", value: { type: "p" } },
+        { type: "block", value: { type: "paragraph" } },
         { type: "text", value: "fox" },
       ]);
 
@@ -39,7 +39,9 @@ describe("basic", () => {
     cy.get(PM_EDITOR).type("{backspace}{backspace}{backspace}");
     cy.get(PM_EDITOR).then(() => {
       const spans = Automerge.spans(docHandle.docSync()!, ["text"]);
-      expect(spans).to.deep.equal([{ type: "block", value: { type: "p" } }]);
+      expect(spans).to.deep.equal([
+        { type: "block", value: { type: "paragraph" } },
+      ]);
 
       const actualDoc = editorViewRef.current?.state.doc;
       const { doc: expectedDoc } = EditorState.create({

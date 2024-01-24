@@ -16,6 +16,7 @@ import {
 import { next as Automerge } from "@automerge/automerge";
 import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
 import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
+import { parseDoc } from "./integration/parseDoc.ts";
 
 export const EditorSchema = schema;
 
@@ -51,6 +52,7 @@ export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
       state: EditorState.create({
         schema: EditorSchema,
         plugins: [...exampleSetup({ schema: EditorSchema }), plugin],
+        doc: parseDoc(doc, path.slice()),
       }),
       dispatchTransaction(transaction: Transaction) {
         const doc = docHandle.docSync();

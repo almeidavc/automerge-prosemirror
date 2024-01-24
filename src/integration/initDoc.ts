@@ -6,7 +6,7 @@ export function initDoc(docHandle: DocHandle<DocType>) {
   docHandle.change((doc) => {
     doc.text = "";
     Automerge.splitBlock(doc, ["text"], 0, {
-      type: new Automerge.RawString("p"),
+      type: new Automerge.RawString("paragraph"),
     });
   });
 }

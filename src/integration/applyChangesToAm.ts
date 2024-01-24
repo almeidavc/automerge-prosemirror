@@ -77,7 +77,7 @@ export function applyChangesToAm(
 
         if (step.slice.openStart === 1 && step.slice.openEnd === 1) {
           Automerge.splitBlock(doc, path.slice(), amFromIndex, {
-            type: new Automerge.RawString("p"),
+            type: new Automerge.RawString("paragraph"),
           });
           return;
         }

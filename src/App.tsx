@@ -9,6 +9,7 @@ import { CircularProgress } from "@mui/material";
 import { BroadcastChannelNetworkAdapter } from "@automerge/automerge-repo-network-broadcastchannel";
 import { next as Automerge } from "@automerge/automerge";
 import { initDoc } from "./integration/initDoc.ts";
+import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 
 export interface DocType {
   text: string;
@@ -17,6 +18,7 @@ export interface DocType {
 function initRepo() {
   return new Repo({
     network: [new BroadcastChannelNetworkAdapter()],
+    storage: new IndexedDBStorageAdapter(),
   });
 }
 
