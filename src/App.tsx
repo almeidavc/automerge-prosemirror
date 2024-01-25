@@ -18,7 +18,7 @@ export interface DocType {
 function initRepo() {
   return new Repo({
     network: [new BroadcastChannelNetworkAdapter()],
-    storage: new IndexedDBStorageAdapter(),
+    // storage: new IndexedDBStorageAdapter(),
   });
 }
 

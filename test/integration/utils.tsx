@@ -5,18 +5,29 @@ import { DocType } from "../../src/App.tsx";
 import { Editor } from "../../src/Editor.tsx";
 import { Span } from "../../src/integration/tmp.ts";
 import { initDoc } from "../../src/integration/initDoc.ts";
+import { next as Automerge } from "@automerge/automerge";
+import { Node } from "prosemirror-model";
 
 export const PM_EDITOR = ".ProseMirror[contenteditable]";
 
-export function setupEditor(ref?: React.RefObject<EditorView>) {
-  const repo = new Repo({
-    network: [],
-  });
+export function mountEditor(
+  ref?: React.RefObject<EditorView>,
+  pmDoc?: Node,
+  amDoc?: Automerge.Doc<DocType>,
+) {
+  const repo = new Repo({ network: [] });
   const docHandle = repo.create<DocType>();
-  initDoc(docHandle);
+
+  if (amDoc) {
+    docHandle.update(() => amDoc);
+  } else {
+    initDoc(docHandle);
+  }
+
   cy.mount(
     <Editor
       viewRef={ref}
+      initialPmDoc={pmDoc}
       docHandle={docHandle}
       path={["text"]}
       sync={{
@@ -29,6 +40,7 @@ export function setupEditor(ref?: React.RefObject<EditorView>) {
       }}
     />,
   );
+
   return docHandle;
 }
 

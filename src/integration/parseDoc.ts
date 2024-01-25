@@ -1,7 +1,7 @@
 import { DocType } from "../App.tsx";
 import { next as Automerge } from "@automerge/automerge";
-import { EditorSchema } from "../Editor.tsx";
 import { getActiveMarks } from "./utils.ts";
+import { EditorSchema } from "../schema.ts";
 
 export function parseDoc(doc: Automerge.Doc<DocType>, path: Automerge.Prop[]) {
   const spans = Automerge.spans<DocType>(doc, path.slice());

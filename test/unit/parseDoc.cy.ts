@@ -1,5 +1,5 @@
 import { EditorState } from "prosemirror-state";
-import { EditorSchema } from "../../src/Editor.tsx";
+import { EditorSchema } from "../../src/schema.ts";
 import { next as Automerge } from "@automerge/automerge";
 import { DocType } from "../../src/App.tsx";
 import { parseDoc } from "../../src/integration/parseDoc.ts";

@@ -3,6 +3,7 @@ import { addListNodes } from "prosemirror-schema-list";
 import { schema as basicSchema } from "prosemirror-schema-basic";
 
 export const EditorSchema = new Schema({
-  nodes: addListNodes(basicSchema.spec.nodes, "paragraph block*", "block"),
+  // TODO: fix itemContent expression. the first child of a list item must be a paragraph not just any block
+  nodes: addListNodes(basicSchema.spec.nodes, "block*", "block"),
   marks: basicSchema.spec.marks,
 });

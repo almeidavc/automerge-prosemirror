@@ -10,16 +10,18 @@ import {
   AutomergePlugin,
   automergePlugin,
   getLastHeads,
-  getLastSpans,
 } from "./integration/plugin.ts";
 import { next as Automerge } from "@automerge/automerge";
-import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
 import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
 import { EditorSchema } from "./schema.ts";
 import { parseDoc } from "./integration/parseDoc.ts";
+import { keymap } from "prosemirror-keymap";
+import { toggleBulletList } from "./integration/commands/toggleBulletList.ts";
+import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
+import { splitBlock } from "./integration/commands/splitBlock.ts";
+import { Node } from "prosemirror-model";
 
 interface EditorProps {
-  viewRef?: MutableRefObject<EditorView | null>;
   docHandle: DocHandle<DocType>;
   path: Automerge.Prop[];
   sync: {
@@ -30,10 +32,19 @@ interface EditorProps {
       handler: (payload: DocHandleChangePayload<DocType>) => void,
     ) => void;
   };
+  // for testing purposes
+  viewRef?: MutableRefObject<EditorView | null>;
+  initialPmDoc?: Node;
 }
 
 // assumes the doc is ready
-export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
+export function Editor({
+  docHandle,
+  path,
+  sync,
+  viewRef,
+  initialPmDoc,
+}: EditorProps) {
   const mountTargetRef = useRef<HTMLDivElement>(null);
 
   const editorViewRef = useRef<EditorView | null>(null);
@@ -52,6 +63,17 @@ export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
         plugins: [...exampleSetup({ schema: EditorSchema }), plugin],
         doc: parseDoc(doc, path.slice()),
       }),
+        doc: initialPmDoc,
+        // doc: parseDoc(doc, path.slice()),
+        plugins: [
+          keymap({
+            Enter: splitBlock,
+            "Shift-Ctrl-8": toggleBulletList,
+          }),
+          ...exampleSetup({ schema: EditorSchema }),
+          plugin,
+        ],
+      }),
       dispatchTransaction(transaction: Transaction) {
         const doc = docHandle.docSync();
         const view = editorViewRef.current;
@@ -61,7 +83,7 @@ export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
           return;
         }
 
-        if (transaction.docChanged) {
+        if (transaction.docChanged || transaction.getMeta("_blocks")) {
           console.group();
           console.log("transaction", transaction);
 
@@ -96,18 +118,7 @@ export function Editor({ viewRef, docHandle, path, sync }: EditorProps) {
         return;
       }
 
-      const patches = payload.patches;
-
-      console.log("marks", Automerge.marks(payload.doc, path.slice()));
-      console.log("patches", patches);
-
-      reconcilePmEditor(
-        view,
-        view.state,
-        payload,
-        getLastSpans(plugin, view.state),
-        path.slice(),
-      );
+      reconcilePmEditor(view, plugin, payload, path.slice());
     };
 
     sync.subscribeToChanges(handler);

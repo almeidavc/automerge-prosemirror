@@ -4,7 +4,7 @@ import { DocHandle } from "@automerge/automerge-repo";
 import { DocType } from "../../src/App.tsx";
 import { EditorState } from "prosemirror-state";
 import { EditorSchema } from "../../src/schema.ts";
-import { PM_EDITOR, setupEditor } from "./utils.tsx";
+import { PM_EDITOR, mountEditor } from "./utils.tsx";
 import { next as Automerge } from "@automerge/automerge";
 
 describe("basic", () => {
@@ -12,7 +12,7 @@ describe("basic", () => {
   let docHandle: DocHandle<DocType>;
 
   beforeEach(() => {
-    docHandle = setupEditor(editorViewRef);
+    docHandle = mountEditor(editorViewRef);
   });
 
   it("insert", () => {
