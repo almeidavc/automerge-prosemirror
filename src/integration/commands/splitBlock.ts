@@ -7,28 +7,27 @@ export type SplitBlockMeta = {
 };
 
 export const splitBlock: Command = (state, dispatch) => {
-  // TODO: handle non-empty selection
-  if (!state.selection.empty) {
-    return false;
-  }
+  let tr = state.tr;
 
-  const { $from } = state.selection;
+  const { $from, $to } = state.selection;
+
+  if (!state.selection.empty) {
+    tr = tr.delete($from.pos, $to.pos);
+  }
 
   const type =
     $from.node($from.depth - 1).type.name === "list_item"
       ? "li"
       : $from.parent.type.name;
-
   const splitBlockMeta: SplitBlockMeta = {
     action: "splitBlock",
     from: $from.pos,
     type: type,
   };
-  const tr = state.tr.setMeta("_blocks", splitBlockMeta);
+  tr = tr.setMeta("_blocks", splitBlockMeta);
 
   if (dispatch) {
     dispatch(tr);
   }
-
   return true;
 };

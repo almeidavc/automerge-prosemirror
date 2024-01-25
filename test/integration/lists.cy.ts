@@ -198,7 +198,7 @@ describe("lists", () => {
     });
   });
 
-  it.only("split list item", () => {
+  it("split list item", () => {
     // setup
     const initialAmDoc = Automerge.change(Automerge.init<DocType>(), (doc) => {
       doc.text = "";

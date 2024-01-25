@@ -33,11 +33,11 @@ export function applyChangesToAm(
   }
 
   return docHandle.changeAt(lastHeads, (doc) => {
-    const isBlockChange = txn.getMeta("_blocks");
-    if (isBlockChange) {
-      handleBlockChange(txn, doc, path.slice());
-    } else {
+    if (txn.steps.length) {
       handlePmChange(txn, doc, path.slice());
+    }
+    if (txn.getMeta("_blocks")) {
+      handleBlockChange(txn, doc, path.slice());
     }
   });
 }

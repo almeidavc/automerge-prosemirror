@@ -80,8 +80,7 @@ describe("blocks", () => {
       });
   });
 
-  // TODO: fix this
-  it.skip("selecting characters and pressing enter, deletes the characters and creates a new block", () => {
+  it("selecting characters and pressing enter, deletes the characters and creates a new block", () => {
     cy.get(PM_EDITOR).type("fox");
     cy.get(PM_EDITOR).type("{selectAll}");
     cy.get(PM_EDITOR)
@@ -137,8 +136,7 @@ describe("blocks", () => {
     },
   );
 
-  // TODO: fix this
-  it.skip(
+  it(
     "selecting range of characters that includes block delimiters and pressing enter, " +
       "deletes selected characters and block structure doesn't change",
     () => {
@@ -206,8 +204,7 @@ describe("blocks", () => {
     },
   );
 
-  // TODO: fix this
-  it.skip(
+  it(
     "select range of characters that includes block delimiters, starts at the first character, and does not contain " +
       "the last character and press enter",
     () => {

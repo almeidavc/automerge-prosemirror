@@ -9,11 +9,6 @@ export type UpdateBlockMeta = {
 };
 
 export const toggleBulletList: Command = (state, dispatch) => {
-  // TODO: handle non-empty selection
-  if (!state.selection.empty) {
-    return false;
-  }
-
   const { $from } = state.selection;
 
   const updateBlockMeta: UpdateBlockMeta = {
