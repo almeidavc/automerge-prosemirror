@@ -196,6 +196,9 @@ describe("lists", () => {
           expect(actualDoc).to.deep.equal(expectedDoc);
         });
     });
+
+    // TODO
+    it("pressing backspace in an empty list item turns it into a paragraph");
   });
 
   it("split list item", () => {

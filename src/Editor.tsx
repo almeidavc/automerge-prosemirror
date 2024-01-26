@@ -16,7 +16,10 @@ import { reconcilePmEditor } from "./integration/reconcilePmEditor.ts";
 import { EditorSchema } from "./schema.ts";
 import { parseDoc } from "./integration/parseDoc.ts";
 import { keymap } from "prosemirror-keymap";
-import { toggleBulletList } from "./integration/commands/toggleBulletList.ts";
+import {
+  convertEmptyBulletList,
+  toggleBulletList,
+} from "./integration/commands/toggleBulletList.ts";
 import { applyChangesToAm } from "./integration/applyChangesToAm.ts";
 import { splitBlock } from "./integration/commands/splitBlock.ts";
 import { Node } from "prosemirror-model";
@@ -60,14 +63,12 @@ export function Editor({
     const view = new EditorView(mountTargetRef.current, {
       state: EditorState.create({
         schema: EditorSchema,
-        plugins: [...exampleSetup({ schema: EditorSchema }), plugin],
-        doc: parseDoc(doc, path.slice()),
-      }),
         doc: initialPmDoc,
         // doc: parseDoc(doc, path.slice()),
         plugins: [
           keymap({
             Enter: splitBlock,
+            Backspace: convertEmptyBulletList,
             "Shift-Ctrl-8": toggleBulletList,
           }),
           ...exampleSetup({ schema: EditorSchema }),

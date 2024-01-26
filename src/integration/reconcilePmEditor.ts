@@ -96,17 +96,20 @@ function mapPatchesToPmTransaction(
         return;
       }
 
+      // start points into the start of the block's content (position after the start tag)
       const start = indexMapper.map(amIndex + 1);
-      // resolvedPos points into the position right after the block start tag
       const resolvedPos = state.doc.resolve(start);
 
-      const parentNode = resolvedPos.node(resolvedPos.depth - 1);
-      const indexInParent = resolvedPos.index(resolvedPos.depth - 1);
-      const previousNode = parentNode.maybeChild(indexInParent - 1);
-      const nextNode = parentNode.maybeChild(indexInParent + 1);
-
       if (patch.value === "li") {
-        if (previousNode?.type.name !== "ul" && nextNode?.type.name !== "ul") {
+        const parentNode = resolvedPos.node(resolvedPos.depth - 1);
+        const indexInParent = resolvedPos.index(resolvedPos.depth - 1);
+        const prevNode = parentNode.maybeChild(indexInParent - 1);
+        const nextNode = parentNode.maybeChild(indexInParent + 1);
+
+        if (
+          prevNode?.type.name !== "bullet_list" &&
+          nextNode?.type.name !== "bullet_list"
+        ) {
           tr.step(
             new ReplaceAroundStep(
               resolvedPos.before(),
@@ -127,21 +130,158 @@ function mapPatchesToPmTransaction(
             ),
           );
         }
+        if (
+          prevNode?.type.name === "bullet_list" &&
+          nextNode?.type.name !== "bullet_list"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 1,
+              resolvedPos.after(),
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(
+                Fragment.from([
+                  EditorSchema.node("bullet_list", null, [
+                    EditorSchema.node("list_item"),
+                  ]),
+                ]),
+                1,
+                0,
+              ),
+              1,
+              true,
+            ),
+          );
+        }
+        if (
+          prevNode?.type.name !== "bullet_list" &&
+          nextNode?.type.name === "bullet_list"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before(),
+              resolvedPos.after() + 1,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(
+                Fragment.from([
+                  EditorSchema.node("bullet_list", null, [
+                    EditorSchema.node("list_item"),
+                  ]),
+                ]),
+                0,
+                1,
+              ),
+              2,
+              true,
+            ),
+          );
+        }
+        if (
+          prevNode?.type.name === "bullet_list" &&
+          nextNode?.type.name === "bullet_list"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 1,
+              resolvedPos.after() + 1,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(
+                Fragment.from([
+                  EditorSchema.node("bullet_list", null, [
+                    EditorSchema.node("list_item"),
+                  ]),
+                ]),
+                1,
+                1,
+              ),
+              1,
+              true,
+            ),
+          );
+        }
       }
 
       // assuming we only have two blocks li and p
       if (patch.value === "paragraph") {
-        tr.step(
-          new ReplaceAroundStep(
-            resolvedPos.before() - 2,
-            resolvedPos.after() + 2,
-            resolvedPos.before(),
-            resolvedPos.after(),
-            Slice.empty,
-            0,
-            true,
-          ),
-        );
+        const parentNode = resolvedPos.node(resolvedPos.depth - 2);
+        const indexInParent = resolvedPos.index(resolvedPos.depth - 2);
+        const prevNode = parentNode.maybeChild(indexInParent - 1);
+        const nextNode = parentNode.maybeChild(indexInParent + 1);
+
+        if (
+          prevNode?.type.name !== "list_item" &&
+          nextNode?.type.name !== "list_item"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 2,
+              resolvedPos.after() + 2,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              Slice.empty,
+              0,
+              true,
+            ),
+          );
+        }
+        if (
+          prevNode?.type.name === "list_item" &&
+          nextNode?.type.name !== "list_item"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 1,
+              resolvedPos.after() + 2,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(Fragment.from(EditorSchema.node("bullet_list")), 1, 0),
+              1,
+              true,
+            ),
+          );
+        }
+        if (
+          prevNode?.type.name !== "list_item" &&
+          nextNode?.type.name === "list_item"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 2,
+              resolvedPos.after() + 1,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(Fragment.from(EditorSchema.node("bullet_list")), 0, 1),
+              0,
+              true,
+            ),
+          );
+        }
+        if (
+          prevNode?.type.name === "list_item" &&
+          nextNode?.type.name === "list_item"
+        ) {
+          tr.step(
+            new ReplaceAroundStep(
+              resolvedPos.before() - 1,
+              resolvedPos.after() + 1,
+              resolvedPos.before(),
+              resolvedPos.after(),
+              new Slice(
+                Fragment.from([
+                  EditorSchema.node("bullet_list"),
+                  EditorSchema.node("bullet_list"),
+                ]),
+                1,
+                1,
+              ),
+              1,
+              true,
+            ),
+          );
+        }
       }
     }
 
